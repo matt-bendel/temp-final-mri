@@ -1,0 +1,69 @@
+import pathlib
+
+from utils.args import Args
+
+
+def create_arg_parser():
+    # CREATE THE PARSER
+    parser = Args()
+
+    # ABLATION ARGS
+    parser.add_argument('--adv-only', action='store_true', help='Whether or not only loss is adversarial')
+    parser.add_argument('--supervised', action='store_true', help='Whether or not to use supervised loss')
+    parser.add_argument('--var-loss', action='store_true', help='Whether or not to use variation loss')
+    parser.add_argument('--data-consistency', action='store_true', help='Whether or not to use data consistency')
+
+    # GAN ARGS
+    parser.add_argument('--num-iters-discriminator', type=int, default=1,
+                        help='Number of iterations of the discriminator')
+    parser.add_argument('--num-z', type=int, default=8,
+                        help='Number of z values')
+    parser.add_argument('--latent-size', type=int, default=512, help='Size of latent vector for z location 2')
+
+    # LEARNING ARGS
+    parser.add_argument('--batch-size', default=4, type=int, help='Mini batch size')
+    parser.add_argument('--num-epochs', type=int, default=100, help='Number of training epochs')
+    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
+    parser.add_argument('--beta_1', type=float, default=0, help='Beta 1 for Adam')
+    parser.add_argument('--beta_2', type=float, default=0.99, help='Beta 2 for Adam')
+    parser.add_argument('--adv-weight', type=float, default=1e-6, help='Weight for adversarial loss')
+    parser.add_argument('--var-weight', type=float, default=2e-2, help='Weight for variance reward')
+    parser.add_argument('--ssim-weight', type=float, default=0.84, help='Weight for supervised loss')
+    parser.add_argument('--gp-weight', type=float, default=10, help='Weight for Gradient Penalty')
+
+    # DATA ARGS
+    parser.add_argument('--im-size', default=384, type=int,
+                        help='Image resolution')
+    parser.add_argument('--data-parallel', required=True, action='store_true',
+                        help='If set, use multiple GPUs using data parallelism')
+    parser.add_argument('--num_of_top_slices', default=6, type=int,
+                        help='top slices have bigger brain image and less air region')
+    parser.add_argument('--use-middle-slices', action='store_true',
+                        help='If set, only uses central slice of every data collection')
+
+    # LOGISTICAL ARGS
+    parser.add_argument('--train-type', type=str, required=True,
+                        help='which model is being trained - should be ablation, standard, or inpainting')
+    parser.add_argument('--inpaint', action='store_true', help='Whether or not to remove chunk of image')
+    parser.add_argument('--dynamic-inpaint', action='store_true',
+                        help='Whether or not to dynamically remove chunk of image')
+    parser.add_argument('--device', type=int, default=0,
+                        help='Which device to train on. Use idx of cuda device or -1 for CPU')
+    #TODO UPDATE EXPDIR
+    parser.add_argument('--exp-dir', type=pathlib.Path,
+                        default=pathlib.Path('/home/bendel.8/Git_Repos/full_scale_mrigan/FINALMRIGAN/trained_models'),
+                        help='Path where model and results should be saved')
+    parser.add_argument('--resume', action='store_true',
+                        help='If set, resume the training from a previous model checkpoint. '
+                             '"--checkpoint" should be set with this')
+    parser.add_argument('--checkpoint_gen', type=str,
+                        help='Path to an existing checkpoint. Used along with "--resume"')
+    parser.add_argument('--checkpoint_dis', type=str,
+                        help='Path to an existing checkpoint. Used along with "--resume"')
+
+    # TEST ARGS
+    parser.add_argument('--metrics', action='store_true', help='Evaluate test metrics')
+    parser.add_argument('--single-plot', action='store_true', help='Generate plots for args.train_type method')
+    parser.add_argument('--compare-plots', action='store_true', help='Generate plots for comparison across methods')
+
+    return parser
