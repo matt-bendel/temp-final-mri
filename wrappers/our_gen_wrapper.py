@@ -83,7 +83,6 @@ class GANWrapper:
     def __init__(self, gen, args):
         self.args = args
         self.resolution = args.im_size
-        self.inpaint = args.inpaint
         self.gen = gen
         self.data_consistency = self.args.data_consistency
 
@@ -94,10 +93,10 @@ class GANWrapper:
         self.gen.eval() if val else self.gen.train()
 
     def reformat(self, samples):
-        reformatted_tensor = torch.zeros(size=(samples.size(0), 8, self.resolution, self.resolution, 2),
+        reformatted_tensor = torch.zeros(size=(samples.size(0), 16, self.resolution, self.resolution, 2),
                                          device=self.args.device)
-        reformatted_tensor[:, :, :, :, 0] = samples[:, 0:8, :, :]
-        reformatted_tensor[:, :, :, :, 1] = samples[:, 8:16, :, :]
+        reformatted_tensor[:, :, :, :, 0] = samples[:, 0:16, :, :]
+        reformatted_tensor[:, :, :, :, 1] = samples[:, 16:32, :, :]
 
         return reformatted_tensor
 
@@ -112,8 +111,8 @@ class GANWrapper:
         image = ifft2c_new(reconstructed_kspace)
 
         output_im = torch.zeros(size=samples.shape, device=self.args.device)
-        output_im[:, 0:8, :, :] = image[:, :, :, :, 0]
-        output_im[:, 8:16, :, :] = image[:, :, :, :, 1]
+        output_im[:, 0:16, :, :] = image[:, :, :, :, 0]
+        output_im[:, 16:32, :, :] = image[:, :, :, :, 1]
 
         return output_im
 
@@ -121,7 +120,6 @@ class GANWrapper:
         num_vectors = y.size(0)
         z = self.get_noise(num_vectors)
         samples = self.gen(z, y)
-        if not self.inpaint:
-            samples = self.readd_measures(samples, true_measures) if self.data_consistency else samples
+        samples = self.readd_measures(samples, true_measures)
 
         return samples

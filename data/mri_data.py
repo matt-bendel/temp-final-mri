@@ -186,7 +186,7 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
     A PyTorch Dataset that provides access to MR image slices.
     """
 
-    def __init__(self, root, transform, challenge, sample_rate=1, use_top_slices=True, number_of_top_slices=6, restrict_size=False):
+    def __init__(self, root, transform, challenge, sample_rate=1, use_top_slices=True, number_of_top_slices=6, restrict_size=False, big_test=False, small_test=False):
         """
         Args:
             root (pathlib.Path): Path to the dataset.
@@ -217,12 +217,15 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
 
         for fname in f[1:len(f)]:
             kspace = h5py.File(fname, 'r')['kspace']
+
             with h5py.File(fname, 'r') as data:
                 if (data.attrs['acquisition'] == 'AXT2'):
                     # scanner_str = findScannerStrength(data['ismrmrd_header'].value)
                     # if (scanner_str > 2.2):
-                    if kspace.shape[1] >= 8:
+                    if kspace.shape[1] >= 16:
                         keep_files.append(fname)
+                    # else:
+                        # print(fname)
 
         files = keep_files
 
@@ -233,7 +236,8 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
 
         random.shuffle(files)
 
-        num_files = round(len(files)*0.3)
+        num_files = (round(len(files)) if big_test else round(len(files)*0.3)) if not small_test else 20
+        print(num_files)
 
         f_testing_and_Val = sorted(files[0:num_files])
 
@@ -263,6 +267,8 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
                     self.examples += [(fname, slice) for slice in range(start_idx, end_idx)]
                 else:
                     self.examples += [(fname, slice) for slice in range(num_slices)]
+
+        print(len(self.examples))
 
     def __len__(self):
         return len(self.examples)

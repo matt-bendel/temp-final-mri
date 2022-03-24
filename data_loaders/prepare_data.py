@@ -1,6 +1,7 @@
 import cv2
 import torch
 import numpy as np
+import sigpy as sp
 
 from utils.espirit import ifft, fft
 from torch.utils.data import DataLoader
@@ -52,61 +53,51 @@ class DataTransform:
         mask = get_mask(self.args.im_size, return_mask=True)
         kspace = kspace.transpose(1, 2, 0)
         x = ifft(kspace, (0, 1))  # (768, 396, 16)
-        coil_compressed_x = ImageCropandKspaceCompression(x)  # (384, 384, 8)
+        coil_compressed_x = ImageCropandKspaceCompression(x)  # (384, 384, 16)
+
         im_tensor = transforms.to_tensor(coil_compressed_x).permute(2, 0, 1, 3)
 
         im_tensor = im_tensor if self.args.im_size == 384 else reduce_resolution(im_tensor)
 
-        if self.args.inpaint:
-            true_image = transforms.root_sum_of_squares(complex_abs(im_tensor)).unsqueeze(0)
-            input_tensor = torch.clone(true_image)
-            input_tensor[:, :, 64:128] = 0
-            true_measures = None
-        else:
-            true_image = torch.clone(im_tensor)
-            true_measures = fft2c_new(im_tensor) * mask
-            image = im_tensor
+        true_image = torch.clone(im_tensor)
+        true_measures = fft2c_new(im_tensor) * mask
+        image = im_tensor
 
-            if self.args.dynamic_inpaint:
-                from random import randrange
+        if self.args.dynamic_inpaint:
+            from random import randrange
 
-                n = image.shape[1]
-                square_length = n // 5
-                end = n - square_length
+            n = image.shape[1]
+            square_length = n // 5
+            end = n - square_length
 
-                rand_start_col = randrange(0, end)
-                rand_start_row = randrange(0, end)
+            rand_start_col = randrange(0, end)
+            rand_start_row = randrange(0, end)
 
-                image[rand_start_row:rand_start_row + square_length, rand_start_col:rand_start_col + square_length,
-                :] = 0
+            image[rand_start_row:rand_start_row + square_length, rand_start_col:rand_start_col + square_length,
+            :] = 0
 
-            kspace = fft2c_new(image)
-            masked_kspace = kspace * mask
-            input_tensor = ifft2c_new(masked_kspace)
+        kspace = fft2c_new(image)
+        masked_kspace = kspace * mask
+        input_tensor = ifft2c_new(masked_kspace)
 
         normalized_input, mean, std = transforms.normalize_instance(input_tensor)
         normalized_gt = transforms.normalize(true_image, mean, std)
 
-        if self.args.inpaint:
-            normalized_true_measures = None
-            final_input = normalized_input
-            final_gt = normalized_gt
-        else:
-            normalized_true_measures = transforms.normalize(ifft2c_new(true_measures), mean, std)
-            normalized_true_measures = fft2c_new(normalized_true_measures)
+        normalized_true_measures = transforms.normalize(ifft2c_new(true_measures), mean, std)
+        normalized_true_measures = fft2c_new(normalized_true_measures)
 
-            final_input = torch.zeros(16, self.args.im_size, self.args.im_size)
-            final_input[0:8, :, :] = normalized_input[:, :, :, 0]
-            final_input[8:16, :, :] = normalized_input[:, :, :, 1]
+        final_input = torch.zeros(16, self.args.im_size, self.args.im_size)
+        final_input[0:8, :, :] = normalized_input[:, :, :, 0]
+        final_input[8:16, :, :] = normalized_input[:, :, :, 1]
 
-            final_gt = torch.zeros(16, self.args.im_size, self.args.im_size)
-            final_gt[0:8, :, :] = normalized_gt[:, :, :, 0]
-            final_gt[8:16, :, :] = normalized_gt[:, :, :, 1]
+        final_gt = torch.zeros(16, self.args.im_size, self.args.im_size)
+        final_gt[0:8, :, :] = normalized_gt[:, :, :, 0]
+        final_gt[8:16, :, :] = normalized_gt[:, :, :, 1]
 
         return final_input, final_gt, normalized_true_measures, mean, std
 
 
-def create_datasets(args, val_only):
+def create_datasets(args, val_only, big_test=False):
     if not val_only:
         train_data = SelectiveSliceData(
             root=args.data_path / 'multicoil_train',
@@ -126,13 +117,14 @@ def create_datasets(args, val_only):
         use_top_slices=True,
         number_of_top_slices=args.num_of_top_slices,
         restrict_size=False,
+        big_test=big_test
     )
 
-    return dev_data, train_data if not val_only else None
+    return dev_data, train_data if not val_only else dev_data
 
 
-def create_data_loaders(args, val_only=False):
-    dev_data, train_data = create_datasets(args, val_only)
+def create_data_loaders(args, val_only=False, big_test=False):
+    dev_data, train_data = create_datasets(args, val_only, big_test=big_test)
 
     if not val_only:
         train_loader = DataLoader(
@@ -184,11 +176,11 @@ def ImageCropandKspaceCompression(x):
     w_to = w_from + 384
     h_to = h_from + 384
     cropped_x = x[w_from:w_to, h_from:h_to, :]
-    if cropped_x.shape[-1] >= 8:
+    if cropped_x.shape[-1] >= 16:
         x_tocompression = cropped_x.reshape(384 ** 2, cropped_x.shape[-1])
         U, S, Vh = np.linalg.svd(x_tocompression, full_matrices=False)
         coil_compressed_x = np.matmul(x_tocompression, Vh.conj().T)
-        coil_compressed_x = coil_compressed_x[:, 0:8].reshape(384, 384, 8)
+        coil_compressed_x = coil_compressed_x[:, 0:16].reshape(384, 384, 16)
     else:
         coil_compressed_x = cropped_x
 

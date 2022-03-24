@@ -7,7 +7,6 @@ import numpy as np
 from utils.parse_args import create_arg_parser
 from evaluation_scripts.metrics import get_metrics
 from evaluation_scripts.single_plot import get_single_plot
-from evaluation_scripts.compare_plots import get_compare_plots
 
 # TODO: IMPLEMENT ALL EVAL LOGIC
 if __name__ == '__main__':
@@ -26,11 +25,11 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    if args.metrics:
+    if args.supervised_metrics:
         get_metrics(args)
 
     if args.single_plot:
         get_single_plot(args)
 
-    if args.compare_plots:
-        get_compare_plots(args)
+    if args.generative_metrics:
+        pass

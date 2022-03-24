@@ -5,6 +5,7 @@ import pytorch_msssim
 
 import numpy as np
 import torch.autograd as autograd
+import matplotlib.pyplot as plt
 
 from typing import Optional
 from data import transforms
@@ -92,12 +93,12 @@ def compute_gradient_penalty(D, real_samples, fake_samples, args, y):
 def train(args):
     args.exp_dir.mkdir(parents=True, exist_ok=True)
 
-    args.in_chans = 1 if args.train_type == 'inpaint' else 16
-    args.out_chans = 1 if args.train_type == 'inpaint' else 16
+    args.in_chans = 32
+    args.out_chans = 32
 
     G, D, opt_G, opt_D, best_loss, start_epoch = get_gan(args)
 
-    train_loader, dev_loader = create_data_loaders(args)
+    train_loader, dev_loader = create_data_loaders(args, big_test=False)
 
     for epoch in range(start_epoch, args.num_epochs):
         batch_loss = {
@@ -154,11 +155,9 @@ def train(args):
 
             var_loss = torch.mean(torch.var(gens, dim=1), dim=(0, 1, 2, 3))
 
-            g_loss = -args.adv_weight * torch.mean(
-                gen_pred_loss) if args.train_type != 'ablation' or not args.adv_only else torch.mean(gen_pred_loss)
-            g_loss += (1 - args.ssim_weight) * F.l1_loss(x, avg_recon) - args.ssim_weight * mssim_tensor(x,
-                                                                                                         avg_recon) if args.train_type != 'ablation' or args.supervised else 0
-            g_loss += -args.var_weight * var_loss if args.train_type != 'ablation' or args.var_loss else 0
+            g_loss = -args.adv_weight * torch.mean(gen_pred_loss)
+            g_loss += (1 - args.ssim_weight) * F.l1_loss(x, avg_recon) - args.ssim_weight * mssim_tensor(x,avg_recon)
+            g_loss += -args.var_weight * var_loss
 
             g_loss.backward()
             opt_G.step()
@@ -177,8 +176,6 @@ def train(args):
             'ssim': []
         }
 
-        total = len(dev_loader)
-        total = total * 0.75 // 1
         for i, data in enumerate(dev_loader):
             G.update_gen_status(val=True)
             with torch.no_grad():
@@ -194,37 +191,60 @@ def train(args):
 
                 avg = torch.mean(gens, dim=1)
 
-                if args.train_type == 'inpaint':
-                    avg_gen = (avg_gen * std[j] + mean[j]).squeeze(1).cpu().numpy()
-                    gt = (x * std[j] + mean[j]).squeeze(1).cpu().numpy()
-                else:
-                    avg_gen = torch.zeros(size=(y.size(0), 8, args.im_size, args.im_size, 2), device=args.device)
-                    avg_gen[:, :, :, :, 0] = avg[:, 0:8, :, :]
-                    avg_gen[:, :, :, :, 1] = avg[:, 8:16, :, :]
+                avg_gen = torch.zeros(size=(y.size(0), 16, args.im_size, args.im_size, 2), device=args.device)
+                avg_gen[:, :, :, :, 0] = avg[:, 0:16, :, :]
+                avg_gen[:, :, :, :, 1] = avg[:, 16:32, :, :]
 
-                    gt = torch.zeros(size=(y.size(0), 8, args.im_size, args.im_size, 2), device=args.device)
-                    gt[:, :, :, :, 0] = x[:, 0:8, :, :]
-                    gt[:, :, :, :, 1] = x[:, 8:16, :, :]
+                gt = torch.zeros(size=(y.size(0), 16, args.im_size, args.im_size, 2), device=args.device)
+                gt[:, :, :, :, 0] = x[:, 0:16, :, :]
+                gt[:, :, :, :, 1] = x[:, 16:32, :, :]
 
                 for j in range(y.size(0)):
-                    if args.train_type == 'inpaint':
-                        avg_gen_np = avg_gen[j].squeeze(0).cpu().numpy()
-                        gt_np = gt[j].squeeze(0).cpu().numpy()
+                    avg_gen_np = avg_gen[j].cpu().numpy()
+                    gt_np = gt[j].cpu().numpy()
 
-                        losses['ssim'].append(ssim(gt_np, avg_gen_np))
-                        losses['psnr'].append(psnr(gt_np, avg_gen_np))
-                    else:
-                        avg_gen_np = transforms.root_sum_of_squares(
-                            complex_abs(avg_gen[j, :, :, :, :] * std[j] + mean[j])).cpu().numpy()
-                        gt_np = transforms.root_sum_of_squares(complex_abs(gt[j, :, :, :, :] * std[j] + mean[j])).cpu().numpy()
+                    losses['ssim'].append(ssim(gt_np, avg_gen_np))
+                    losses['psnr'].append(psnr(gt_np, avg_gen_np))
 
-                        losses['ssim'].append(ssim(gt_np, avg_gen_np))
-                        losses['psnr'].append(psnr(gt_np, avg_gen_np))
+                    if i == 0 and j == 2:
+                        output_rss = torch.zeros(16, args.im_size, args.im_size, 2)
+                        output_rss[:, :, :, 0] = avg_gen[0, 0:16, :, :]
+                        output_rss[:, :, :, 1] = avg_gen[0, 16:32, :, :]
+                        output = transforms.root_sum_of_squares(complex_abs(output_rss * std[0] + mean[0]))
 
-                    # TODO: PLOT
+                        gen_im_list = []
+                        for z in range(args.num_z):
+                            val_rss = torch.zeros(16, args.im_size, args.im_size, 2).to(args.device)
+                            val_rss[:, :, :, 0] = gens[0, z, 0:16, :, :]
+                            val_rss[:, :, :, 1] = gens[0, z, 16:32, :, :]
+                            gen_im_list.append(transforms.root_sum_of_squares(
+                                complex_abs(val_rss * std[0] + mean[0])).cpu().numpy())
 
-            if i <= total:
-                break
+                        std_dev = np.zeros(output.shape)
+                        for val in gen_im_list:
+                            std_dev = std_dev + np.power((val - output), 2)
+
+                        std_dev = std_dev / args.num_z
+                        std_dev = np.sqrt(std_dev)
+
+                        fig = plt.figure()
+                        ax = fig.add_subplot(1, 1, 1)
+                        im = ax.imshow(std_dev, cmap='viridis')
+                        ax.set_xticks([])
+                        ax.set_yticks([])
+                        fig.subplots_adjust(right=0.85)  # Make room for colorbar
+
+                        # Get position of final error map axis
+                        [[x10, y10], [x11, y11]] = ax.get_position().get_points()
+
+                        pad = 0.01
+                        width = 0.02
+                        cbar_ax = fig.add_axes([x11 + pad, y10, width, y11 - y10])
+
+                        fig.colorbar(im, cax=cbar_ax)
+
+                        plt.savefig('std_dev_gen.png')
+                        plt.close()
 
         psnr_loss = np.mean(losses['psnr'])
         best_model = psnr_loss > best_loss
