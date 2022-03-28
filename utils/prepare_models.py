@@ -6,7 +6,7 @@ from models.discriminators.our_disc import DiscriminatorModel
 
 def build_model(args):
     model = GeneratorModel(
-        in_chans=args.in_chans,
+        in_chans=args.in_chans + 2,
         out_chans=args.out_chans,
         resolution=args.im_size,
         latent_size=args.latent_size
