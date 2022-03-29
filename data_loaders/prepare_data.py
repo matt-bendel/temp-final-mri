@@ -94,7 +94,7 @@ class DataTransform:
         final_gt[0:16, :, :] = normalized_gt[:, :, :, 0]
         final_gt[16:32, :, :] = normalized_gt[:, :, :, 1]
 
-        return final_input, final_gt, normalized_true_measures, mean, std
+        return final_input.float(), final_gt.float(), normalized_true_measures.float(), mean.float(), std.float()
 
 
 def create_datasets(args, val_only, big_test=False):
