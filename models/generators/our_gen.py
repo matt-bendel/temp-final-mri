@@ -204,7 +204,7 @@ class GeneratorModel(nn.Module):
             nn.Conv2d(ch // 2, out_chans, kernel_size=1),
         )
 
-    def forward(self, z, cond):
+    def forward(self, cond):
         """
         Args:
             input (torch.Tensor): Input tensor of shape [batch_size, self.in_chans, height, width]
