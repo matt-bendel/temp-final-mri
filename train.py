@@ -207,10 +207,7 @@ def train(args):
                     losses['psnr'].append(psnr(gt_np, avg_gen_np))
 
                     if i == 0 and j == 2:
-                        output_rss = torch.zeros(16, args.im_size, args.im_size, 2)
-                        output_rss[:, :, :, 0] = avg_gen[0, 0:16, :, :]
-                        output_rss[:, :, :, 1] = avg_gen[0, 16:32, :, :]
-                        output = transforms.root_sum_of_squares(complex_abs(output_rss * std[0] + mean[0]))
+                        output = transforms.root_sum_of_squares(complex_abs(avg_gen[0] * std[0] + mean[0]))
 
                         gen_im_list = []
                         for z in range(args.num_z):
