@@ -48,7 +48,7 @@ def create_arg_parser():
                         help='Which device to train on. Use idx of cuda device or -1 for CPU')
     #TODO UPDATE EXPDIR
     parser.add_argument('--exp-dir', type=pathlib.Path,
-                        default=pathlib.Path('/home/bendel.8/Git_Repos/full_scale_mrigan/FINALMRIGAN/trained_models'),
+                        default=pathlib.Path('/home/bendel.8/Git_Repos/temp-final-mri/trained_models'),
                         help='Path where model and results should be saved')
     parser.add_argument('--resume', action='store_true',
                         help='If set, resume the training from a previous model checkpoint. '
