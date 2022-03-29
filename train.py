@@ -200,8 +200,8 @@ def train(args):
                 gt[:, :, :, :, 1] = x[:, 16:32, :, :]
 
                 for j in range(y.size(0)):
-                    avg_gen_np = avg_gen[j].cpu().numpy()
-                    gt_np = gt[j].cpu().numpy()
+                    avg_gen_np = transforms.root_sum_of_squares(complex_abs(avg_gen[j] * std[j] + mean[j])).cpu().numpy()
+                    gt_np = transforms.root_sum_of_squares(complex_abs(gt[j] * std[j] + mean[j])).cpu().numpy()
 
                     losses['ssim'].append(ssim(gt_np, avg_gen_np))
                     losses['psnr'].append(psnr(gt_np, avg_gen_np))
