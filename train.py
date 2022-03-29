@@ -207,7 +207,7 @@ def train(args):
                     losses['psnr'].append(psnr(gt_np, avg_gen_np))
 
                     if i == 0 and j == 2:
-                        output = transforms.root_sum_of_squares(complex_abs(avg_gen[0] * std[0] + mean[0]))
+                        output = transforms.root_sum_of_squares(complex_abs(avg_gen[0] * std[0] + mean[0])).cpu().numpy()
 
                         gen_im_list = []
                         for z in range(args.num_z):
