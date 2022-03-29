@@ -5,6 +5,7 @@ from data import transforms
 
 
 def get_mask(resolution, return_mask=False):
+    # TODO: ADD R=8
     if resolution == 384:
         a = np.array(
             [0, 10, 19, 28, 37, 46, 54, 61, 69, 76, 83, 89, 95, 101, 107, 112, 118, 122, 127, 132, 136, 140, 144, 148,
@@ -26,7 +27,7 @@ def get_mask(resolution, return_mask=False):
         m[:, 56:73] = True
 
     samp = m
-    numcoil = 8
+    numcoil = 16
     mask = transforms.to_tensor(np.tile(samp, (numcoil, 1, 1)).astype(np.float32))
     mask = torch.unsqueeze(mask, -1).repeat(1, 1, 1, 2)
 

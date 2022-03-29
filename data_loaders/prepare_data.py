@@ -86,13 +86,13 @@ class DataTransform:
         normalized_true_measures = transforms.normalize(ifft2c_new(true_measures), mean, std)
         normalized_true_measures = fft2c_new(normalized_true_measures)
 
-        final_input = torch.zeros(16, self.args.im_size, self.args.im_size)
-        final_input[0:8, :, :] = normalized_input[:, :, :, 0]
-        final_input[8:16, :, :] = normalized_input[:, :, :, 1]
+        final_input = torch.zeros(32, self.args.im_size, self.args.im_size)
+        final_input[0:16, :, :] = normalized_input[:, :, :, 0]
+        final_input[16:32, :, :] = normalized_input[:, :, :, 1]
 
-        final_gt = torch.zeros(16, self.args.im_size, self.args.im_size)
-        final_gt[0:8, :, :] = normalized_gt[:, :, :, 0]
-        final_gt[8:16, :, :] = normalized_gt[:, :, :, 1]
+        final_gt = torch.zeros(32, self.args.im_size, self.args.im_size)
+        final_gt[0:16, :, :] = normalized_gt[:, :, :, 0]
+        final_gt[16:32, :, :] = normalized_gt[:, :, :, 1]
 
         return final_input, final_gt, normalized_true_measures, mean, std
 
