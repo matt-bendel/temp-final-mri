@@ -153,11 +153,11 @@ def train(args):
             for k in range(y.shape[0] - 1):
                 gen_pred_loss += torch.mean(fake_pred[k + 1])
 
-            var_loss = torch.mean(torch.var(gens, dim=1), dim=(0, 1, 2, 3))
+            std_loss = torch.mean(torch.std(gens, dim=1), dim=(0, 1, 2, 3))
 
             g_loss = -args.adv_weight * torch.mean(gen_pred_loss)
-            g_loss += (1 - args.ssim_weight) * F.l1_loss(x, avg_recon) - args.ssim_weight * mssim_tensor(x, avg_recon)
-            g_loss += -args.var_weight * var_loss
+            g_loss += F.l1_loss(x, avg_recon) #- args.ssim_weight * mssim_tensor(x, avg_recon)
+            g_loss += - np.sqrt((2*args.num_z)/(np.pi * (args.num_z + 1))) * std_loss
 
             g_loss.backward()
             opt_G.step()
