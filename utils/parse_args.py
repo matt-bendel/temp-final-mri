@@ -26,7 +26,7 @@ def create_arg_parser():
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--beta_1', type=float, default=0, help='Beta 1 for Adam')
     parser.add_argument('--beta_2', type=float, default=0.99, help='Beta 2 for Adam')
-    parser.add_argument('--adv-weight', type=float, default=1e-6, help='Weight for adversarial loss')
+    parser.add_argument('--adv-weight', type=float, default=1e-4, help='Weight for adversarial loss')
     parser.add_argument('--var-weight', type=float, default=0.01, help='Weight for variance reward')
     parser.add_argument('--ssim-weight', type=float, default=0.84, help='Weight for supervised loss')
     parser.add_argument('--gp-weight', type=float, default=10, help='Weight for Gradient Penalty')
