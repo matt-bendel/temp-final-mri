@@ -249,7 +249,6 @@ def train(args):
 
         GLOBAL_LOSS_DICT['g_loss'].append(np.mean(batch_loss['g_loss']))
         GLOBAL_LOSS_DICT['d_loss'].append(np.mean(batch_loss['d_loss']))
-        GLOBAL_LOSS_DICT['d_acc'].append(np.mean(batch_loss['d_acc']))
 
         save_str = f"END OF EPOCH {epoch + 1}: [Average D loss: {GLOBAL_LOSS_DICT['d_loss'][epoch - start_epoch]:.4f}] [Average D Acc: {GLOBAL_LOSS_DICT['d_acc'][epoch - start_epoch]:.4f}] [Average G loss: {GLOBAL_LOSS_DICT['g_loss'][epoch - start_epoch]:.4f}]\n"
         print(save_str)
