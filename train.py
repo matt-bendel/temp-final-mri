@@ -155,9 +155,9 @@ def train(args):
 
             std_loss = torch.mean(torch.std(gens, dim=1), dim=(0, 1, 2, 3))
 
-            g_loss = -args.adv_weight * torch.mean(gen_pred_loss)
+            g_loss = -torch.mean(gen_pred_loss)
             g_loss += F.l1_loss(x, avg_recon) #- args.ssim_weight * mssim_tensor(x, avg_recon)
-            g_loss += - np.sqrt((2*args.num_z)/(np.pi * (args.num_z + 1))) * std_loss
+            g_loss += -np.sqrt((2*args.num_z)/(np.pi * (args.num_z + 1))) * std_loss
 
             g_loss.backward()
             opt_G.step()
