@@ -186,7 +186,7 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
     A PyTorch Dataset that provides access to MR image slices.
     """
 
-    def __init__(self, root, transform, challenge, sample_rate=1, use_top_slices=True, number_of_top_slices=6, restrict_size=False, big_test=False, small_test=False):
+    def __init__(self, root, transform, challenge, sample_rate=1, use_top_slices=True, number_of_top_slices=6, restrict_size=False, big_test=False, test_set=False):
         """
         Args:
             root (pathlib.Path): Path to the dataset.
@@ -201,6 +201,7 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
         if challenge not in ('singlecoil', 'multicoil'):
             raise ValueError('challenge should be either "singlecoil" or "multicoil"')
 
+        self.test_set = test_set
         self.transform = transform
         self.recons_key = 'reconstruction_esc' if challenge == 'singlecoil' else 'reconstruction_rss'
 
@@ -236,7 +237,7 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
 
         random.shuffle(files)
 
-        num_files = (round(len(files)) if big_test else round(len(files)*0.3)) if not small_test else 20
+        num_files = (round(len(files)) if big_test else round(len(files)*0.3))
         print(num_files)
 
         f_testing_and_Val = sorted(files[0:num_files])
@@ -278,7 +279,12 @@ class SelectiveSliceData_Val(torch.utils.data.Dataset):
         with h5py.File(fname, 'r') as data:
             kspace = data['kspace'][slice]
             target = data[self.recons_key][slice] if self.recons_key in data else None
-            return self.transform(kspace, target, data.attrs, fname.name, slice)
+            if self.test_set:
+                with h5py.File(pathlib.Path(str(fname).replace('small_T2_test', 'small_T2_test_sense_maps')), 'r') as sense_data:
+                    sense_maps = sense_data['s_maps'][slice]
+            else:
+                sense_maps = None
+            return self.transform(kspace, target, data.attrs, fname.name, slice, sense_maps)
 
 
 class CombinedSliceDataset(torch.utils.data.Dataset):

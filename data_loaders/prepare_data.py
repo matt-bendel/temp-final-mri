@@ -17,7 +17,7 @@ class DataTransform:
     Data Transformer for training U-Net models.
     """
 
-    def __init__(self, args, use_seed=False):
+    def __init__(self, args, use_seed=False, test=False):
         """
         Args:
             mask_func (common.subsample.MaskFunc): A function that can create  a mask of
@@ -31,8 +31,9 @@ class DataTransform:
         self.use_seed = use_seed
         self.args = args
         self.mask = None
+        self.test = test
 
-    def __call__(self, kspace, target, attrs, fname, slice):
+    def __call__(self, kspace, target, attrs, fname, slice, sense_maps=None):
         """
         Args:
             kspace (numpy.array): Input k-space of shape (num_coils, rows, cols, 2) for multi-coil
@@ -63,18 +64,18 @@ class DataTransform:
         true_measures = fft2c_new(im_tensor) * mask
         image = im_tensor
 
-        if self.args.dynamic_inpaint:
-            from random import randrange
-
-            n = image.shape[1]
-            square_length = n // 5
-            end = n - square_length
-
-            rand_start_col = randrange(0, end)
-            rand_start_row = randrange(0, end)
-
-            image[rand_start_row:rand_start_row + square_length, rand_start_col:rand_start_col + square_length,
-            :] = 0
+        # if self.args.dynamic_inpaint:
+        #     from random import randrange
+        #
+        #     n = image.shape[1]
+        #     square_length = n // 5
+        #     end = n - square_length
+        #
+        #     rand_start_col = randrange(0, end)
+        #     rand_start_row = randrange(0, end)
+        #
+        #     image[rand_start_row:rand_start_row + square_length, rand_start_col:rand_start_col + square_length,
+        #     :] = 0
 
         kspace = fft2c_new(image)
         masked_kspace = kspace * mask
@@ -93,6 +94,9 @@ class DataTransform:
         final_gt = torch.zeros(32, self.args.im_size, self.args.im_size)
         final_gt[0:16, :, :] = normalized_gt[:, :, :, 0]
         final_gt[16:32, :, :] = normalized_gt[:, :, :, 1]
+
+        if self.test:
+            return final_input.float(), final_gt.float(), normalized_true_measures.float(), mean.float(), std.float(), sense_maps
 
         return final_input.float(), final_gt.float(), normalized_true_measures.float(), mean.float(), std.float()
 
@@ -145,6 +149,35 @@ def create_data_loaders(args, val_only=False, big_test=False):
     )
 
     return train_loader if not val_only else None, dev_loader
+
+
+def create_test_dataset(args):
+    data = SelectiveSliceData_Val(
+        root=args.data_path / 'small_T2_test',
+        transform=DataTransform(args, test=True),
+        challenge='multicoil',
+        sample_rate=1,
+        use_top_slices=True,
+        number_of_top_slices=args.num_of_top_slices,
+        restrict_size=False,
+        big_test=False,
+        test_set=True
+    )
+    return data
+
+
+def create_test_loader(args):
+    data = create_test_dataset(args)
+
+    loader = DataLoader(
+        dataset=data,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=16,
+        pin_memory=True,
+    )
+
+    return loader
 
 
 def reduce_resolution(im):
