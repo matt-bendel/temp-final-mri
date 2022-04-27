@@ -96,6 +96,9 @@ def get_metrics(args):
                 torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
                 gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
 
+                avg_gen_np[np.isnan(avg_gen_np)] = 0
+                gt_np[np.isnan(gt_np)] = 0
+
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
                 losses['psnr'].append(psnr(gt_np, avg_gen_np))
                 losses['snr'].append(snr(gt_np, avg_gen_np))

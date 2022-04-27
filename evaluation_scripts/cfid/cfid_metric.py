@@ -140,14 +140,16 @@ class CFIDMetric:
                                          device=self.args.device)
             reformatted[:, :, :, 0] = multi_coil_inp[i, 0:16, :, :]
             reformatted[:, :, :, 1] = multi_coil_inp[i, 16:32, :, :]
-            reformatted = tensor_to_complex_np(reformatted * std[i] + mean[i])
+            reformatted = tensor_to_complex_np((reformatted * std[i] + mean[i]).cpu())
 
-            im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape), sense_maps.reshape((1,) + sense_maps.shape)))[
-                0].abs().cpu().numpy()
+            im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape), sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
+                0].abs().numpy()
 
-            embed_ims[i, 0, :, :] = im
-            embed_ims[i, 1, :, :] = im
-            embed_ims[i, 2, :, :] = im
+            im[np.isnan(im)] = 0
+
+            embed_ims[i, 0, :, :] = torch.tensor(im)
+            embed_ims[i, 1, :, :] = torch.tensor(im)
+            embed_ims[i, 2, :, :] = torch.tensor(im)
 
         return embed_ims
 
@@ -163,6 +165,7 @@ class CFIDMetric:
             condition = condition.cuda()
             gt = gt.cuda()
             true_cond = true_cond.cuda()
+            maps = maps.cpu().numpy()
             mean = mean.cuda()
             std = std.cuda()
 
