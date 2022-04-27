@@ -15,6 +15,9 @@ def load_best_gan(args):
     checkpoint_gen = torch.load(checkpoint_file_gen, map_location=torch.device('cuda'))
 
     generator = build_model(args)
+    if args.data_parallel:
+        generator = torch.nn.DataParallel(generator)
+
     generator.load_state_dict(checkpoint_gen['model'])
 
     generator = GANWrapper(generator, args)
