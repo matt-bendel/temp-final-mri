@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import sigpy as sp
 from evaluation_scripts import compute_cfid
+import matplotlib.pyplot as plt
 
 from typing import Optional
 from wrappers.our_gen_wrapper import load_best_gan
@@ -71,6 +72,7 @@ def get_metrics(args):
             y = y.to(args.device)
             x = x.to(args.device)
             y_true = y_true.to(args.device)
+            maps = maps.cpu().numpy()
 
             gens = torch.zeros(size=(y.size(0), 32, args.in_chans, args.im_size, args.im_size),
                                device=args.device)
@@ -89,13 +91,10 @@ def get_metrics(args):
             gt[:, :, :, :, 1] = x[:, 16:32, :, :]
 
             for j in range(y.size(0)):
-                gt_ksp, avg_ksp = fft2c_new(gt), fft2c_new(avg_gen)
+                gt_ksp, avg_ksp = tensor_to_complex_np(fft2c_new(gt[j]).cpu()), tensor_to_complex_np(fft2c_new(avg_gen[j]).cpu())
                 avg_gen_np = \
-                torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps.reshape((1,) + maps.shape)))[0].abs().cpu().numpy()
-                gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps.reshape((1,) + maps.shape)))[0].abs().cpu().numpy()
-
-                print(gt_np.shape)
-                print(avg_gen_np.shape)
+                torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
+                gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
 
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
                 losses['psnr'].append(psnr(gt_np, avg_gen_np))
