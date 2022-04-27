@@ -88,7 +88,7 @@ def get_metrics(args):
             x = x.to(args.device)
             y_true = y_true.to(args.device)
 
-            gens = torch.zeros(size=(y.size(0), args.num_z, args.in_chans, args.im_size, args.im_size),
+            gens = torch.zeros(size=(y.size(0), 32, args.in_chans, args.im_size, args.im_size),
                                device=args.device)
             for z in range(32):
                 gens[:, z, :, :, :] = G(y, y_true)
