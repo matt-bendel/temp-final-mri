@@ -1,5 +1,5 @@
-from cfid.embeddings import InceptionEmbedding
-from cfid.cfid_metric import CFIDMetric
+from evaluation_scripts.cfid.embeddings import InceptionEmbedding
+from evaluation_scripts.cfid.cfid_metric import CFIDMetric
 from data_loaders.prepare_data import create_test_loader
 from wrappers.our_gen_wrapper import load_best_gan
 
