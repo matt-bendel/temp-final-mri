@@ -32,6 +32,8 @@ def create_arg_parser():
     parser.add_argument('--gp-weight', type=float, default=10, help='Weight for Gradient Penalty')
 
     # DATA ARGS
+    parser.add_argument('--R', default=4, type=int,
+                        help='Acceleration rate - 4 or 8')
     parser.add_argument('--im-size', default=384, type=int,
                         help='Image resolution')
     parser.add_argument('--data-parallel', required=True, action='store_true',

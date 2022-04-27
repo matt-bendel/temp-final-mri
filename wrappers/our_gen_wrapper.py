@@ -119,7 +119,7 @@ class GANWrapper:
         reformatted_tensor = self.reformat(samples)
         reconstructed_kspace = fft2c_new(reformatted_tensor)
 
-        inds = get_mask(self.resolution)
+        inds = get_mask(self.resolution, R=self.args.R)
 
         reconstructed_kspace[:, :, inds[0], inds[1], :] = measures[:, :, inds[0], inds[1], :]
 

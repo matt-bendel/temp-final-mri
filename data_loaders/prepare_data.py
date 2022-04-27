@@ -51,7 +51,7 @@ class DataTransform:
                 norm (float): L2 norm of the entire volume.
         """
         # GRO Sampling mask:
-        mask = get_mask(self.args.im_size, return_mask=True)
+        mask = get_mask(self.args.im_size, return_mask=True, R=self.args.R)
         kspace = kspace.transpose(1, 2, 0)
         x = ifft(kspace, (0, 1))  # (768, 396, 16)
         coil_compressed_x = ImageCropandKspaceCompression(x)  # (384, 384, 16)
@@ -84,6 +84,7 @@ class DataTransform:
         normalized_input, mean, std = transforms.normalize_instance(input_tensor)
         normalized_gt = transforms.normalize(true_image, mean, std)
 
+        # For Dynamic Inpainting
         normalized_true_measures = transforms.normalize(ifft2c_new(true_measures), mean, std)
         normalized_true_measures = fft2c_new(normalized_true_measures)
 
@@ -160,7 +161,7 @@ def create_test_dataset(args):
         use_top_slices=True,
         number_of_top_slices=args.num_of_top_slices,
         restrict_size=False,
-        big_test=False,
+        big_test=True,
         test_set=True
     )
     return data
