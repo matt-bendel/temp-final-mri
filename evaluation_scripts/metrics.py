@@ -2,7 +2,7 @@ import torch
 
 import numpy as np
 import sigpy as sp
-import compute_cfid
+from evaluation_scripts import compute_cfid
 
 from typing import Optional
 from wrappers.our_gen_wrapper import load_best_gan
