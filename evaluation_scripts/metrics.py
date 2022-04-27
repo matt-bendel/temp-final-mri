@@ -2,6 +2,7 @@ import torch
 
 import numpy as np
 import sigpy as sp
+import compute_cfid
 
 from typing import Optional
 from wrappers.our_gen_wrapper import load_best_gan
@@ -120,3 +121,6 @@ def get_metrics(args):
     print(f'MEAN SNR: {np.mean(losses["snr"]):.2f} || MEDIAN SNR: {np.median(losses["snr"]):.2f}')
     print(f'MEAN SSIM: {np.mean(losses["ssim"]):.2f} || MEDIAN SSIM: {np.median(losses["ssim"]):.2f}')
     print(f'MEAN APSD: {np.mean(losses["apsd"]):.2f} || MEDIAN APSD: {np.median(losses["apsd"]):.2f}')
+
+    compute_cfid.get_cfid(args)
+

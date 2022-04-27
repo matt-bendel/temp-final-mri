@@ -20,4 +20,4 @@ def get_cfid(args):
                              cuda=True,
                              args=args)
 
-    print('CFID: ', cfid_metric.get_cfid())
+    print('CFID: ', cfid_metric.get_cfid_torch())
