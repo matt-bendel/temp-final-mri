@@ -9,6 +9,7 @@ from wrappers.our_gen_wrapper import load_best_gan
 from data_loaders.prepare_data import create_test_loader
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from utils.math import tensor_to_complex_np
+from utils.fftc import ifft2c_new, fft2c_new
 
 def psnr(
         gt: np.ndarray, pred: np.ndarray, maxval: Optional[float] = None
@@ -51,23 +52,6 @@ def get_mvue(kspace, s_maps):
     return np.sum(sp.ifft(kspace, axes=(-1, -2)) * np.conj(s_maps), axis=1) / np.sqrt(
         np.sum(np.square(np.abs(s_maps)), axis=1))
 
-def convert_to_kspace(args, gt, recon, mean, std):
-    reformatted_gt = torch.zeros(size=(16, 384, 384, 2),
-                                     device=args.device)
-    reformatted_gt[:, :, :, 0] = gt[0:16, :, :]
-    reformatted_gt[:, :, :, 1] = gt[16:32, :, :]
-    reformatted_gt = tensor_to_complex_np(reformatted_gt * std + mean)
-
-    reformatted_recon = torch.zeros(size=(16, 384, 384, 2),
-                                 device=args.device)
-    reformatted_recon[:, :, :, 0] = recon[0:16, :, :]
-    reformatted_recon[:, :, :, 1] = recon[16:32, :, :]
-    reformatted_recon = tensor_to_complex_np(reformatted_recon * std + mean)
-
-    print(reformatted_recon.shape)
-
-    return reformatted_gt, reformatted_recon
-
 def get_metrics(args):
     G = load_best_gan(args)
     G.update_gen_status(val=True)
@@ -105,7 +89,7 @@ def get_metrics(args):
             gt[:, :, :, :, 1] = x[:, 16:32, :, :]
 
             for j in range(y.size(0)):
-                gt_ksp, avg_ksp = convert_to_kspace(args, gt[j], avg_gen[j], mean[j], std[j])
+                gt_ksp, avg_ksp = fft2c_new(gt), fft2c_new(avg_gen)
                 avg_gen_np = \
                 torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps.reshape((1,) + maps.shape)))[0].abs().cpu().numpy()
                 gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps.reshape((1,) + maps.shape)))[0].abs().cpu().numpy()
