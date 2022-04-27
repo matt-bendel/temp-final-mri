@@ -80,7 +80,7 @@ def get_metrics(args):
                 gens[:, z, :, :, :] = G(y, y_true)
 
             avg = torch.mean(gens, dim=1)
-            losses['apsd'].append(torch.mean(torch.std(gens, dim=1), dim=(0, 1, 2, 3)))
+            losses['apsd'].append(torch.mean(torch.std(gens, dim=1), dim=(0, 1, 2, 3)).cpu().numpy())
 
             avg_gen = torch.zeros(size=(y.size(0), 16, args.im_size, args.im_size, 2), device=args.device)
             avg_gen[:, :, :, :, 0] = avg[:, 0:16, :, :]
