@@ -25,6 +25,9 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
+    args.in_chans = 32
+    args.out_chans = 32
+
     get_metrics(args)
 
     if args.single_plot:
