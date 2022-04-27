@@ -13,7 +13,7 @@ def get_cfid(args):
 
     print("GETTING DATA LOADERS")
     loader = create_test_loader(args)
-    cfid_metric = CFIDMetric(gan=None,
+    cfid_metric = CFIDMetric(gan=G,
                              loader=loader,
                              image_embedding=inception_embedding,
                              condition_embedding=inception_embedding,
