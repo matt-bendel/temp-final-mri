@@ -25,11 +25,8 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    if args.supervised_metrics:
-        get_metrics(args)
+    get_metrics(args)
 
     if args.single_plot:
         pass
 
-    if args.generative_metrics:
-        pass
