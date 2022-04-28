@@ -112,8 +112,8 @@ def get_metrics(args):
 
     print(f'MEAN PSNR: {np.mean(losses["psnr"]):.2f} || MEDIAN PSNR: {np.median(losses["psnr"]):.2f}')
     print(f'MEAN SNR: {np.mean(losses["snr"]):.2f} || MEDIAN SNR: {np.median(losses["snr"]):.2f}')
-    print(f'MEAN SSIM: {np.mean(losses["ssim"]):.2f} || MEDIAN SSIM: {np.median(losses["ssim"]):.2f}')
+    print(f'MEAN SSIM: {np.mean(losses["ssim"]):.4f} || MEDIAN SSIM: {np.median(losses["ssim"]):.4f}')
     print(f'MEAN APSD: {np.mean(losses["apsd"]):.2f} || MEDIAN APSD: {np.median(losses["apsd"]):.2f}')
 
-    compute_cfid.get_cfid(args)
+    compute_cfid.get_cfid(args, G)
 

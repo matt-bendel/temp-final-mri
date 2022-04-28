@@ -4,12 +4,9 @@ from data_loaders.prepare_data import create_test_loader
 from wrappers.our_gen_wrapper import load_best_gan
 
 
-def get_cfid(args):
+def get_cfid(args, G):
     print("GETTING INCEPTION EMBEDDING")
     inception_embedding = InceptionEmbedding(parallel=True)
-    print("GETTING GENERATOR")
-    G = load_best_gan(args)
-    G.update_gen_status(val=True)
 
     print("GETTING DATA LOADERS")
     loader = create_test_loader(args)
