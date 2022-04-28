@@ -17,6 +17,9 @@ from wrappers.our_gen_wrapper import get_gan, save_model
 from data_loaders.prepare_data import create_data_loaders
 from torch.nn import functional as F
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
+from utils.math import tensor_to_complex_np
+from utils.fftc import ifft2c_new, fft2c_new
+from evaluation_scripts.metrics import get_mvue
 
 GLOBAL_LOSS_DICT = {
     'g_loss': [],
@@ -257,10 +260,11 @@ def train(args):
         for i, data in enumerate(dev_loader):
             G.update_gen_status(val=True)
             with torch.no_grad():
-                y, x, y_true, mean, std = data
+                y, x, y_true, mean, std, maps = data
                 y = y.to(args.device)
                 x = x.to(args.device)
                 y_true = y_true.to(args.device)
+                maps = maps.cpu().numpy()
 
                 gens = torch.zeros(size=(y.size(0), args.num_z, args.in_chans, args.im_size, args.im_size),
                                    device=args.device)
@@ -278,9 +282,15 @@ def train(args):
                 gt[:, :, :, :, 1] = x[:, 16:32, :, :]
 
                 for j in range(y.size(0)):
-                    avg_gen_np = transforms.root_sum_of_squares(
-                        complex_abs(avg_gen[j] * std[j] + mean[j])).cpu().numpy()
-                    gt_np = transforms.root_sum_of_squares(complex_abs(gt[j] * std[j] + mean[j])).cpu().numpy()
+                    gt_ksp, avg_ksp = tensor_to_complex_np(fft2c_new(gt[j] * std[j] + mean[j]).cpu()), tensor_to_complex_np(fft2c_new(avg_gen[j] * std[j] + mean[j]).cpu())
+                    avg_gen_np = torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
+                    gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
+
+                    avg_gen_np[np.isnan(avg_gen_np)] = 0
+                    gt_np[np.isnan(gt_np)] = 0
+                    # avg_gen_np = transforms.root_sum_of_squares(
+                    #     complex_abs(avg_gen[j] * std[j] + mean[j])).cpu().numpy()
+                    # gt_np = transforms.root_sum_of_squares(complex_abs(gt[j] * std[j] + mean[j])).cpu().numpy()
 
                     losses['ssim'].append(ssim(gt_np, avg_gen_np))
                     losses['psnr'].append(psnr(gt_np, avg_gen_np))

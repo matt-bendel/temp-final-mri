@@ -93,18 +93,13 @@ def get_metrics(args):
             gt[:, :, :, :, 1] = x[:, 16:32, :, :]
 
             for j in range(y.size(0)):
-                mvue = True
-                if mvue:
-                    gt_ksp, avg_ksp = tensor_to_complex_np(fft2c_new(gt[j] * std[j] + mean[j]).cpu()), tensor_to_complex_np(fft2c_new(avg_gen[j] * std[j] + mean[j]).cpu())
-                    avg_gen_np = \
-                    torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
-                    gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
+                gt_ksp, avg_ksp = tensor_to_complex_np(fft2c_new(gt[j] * std[j] + mean[j]).cpu()), tensor_to_complex_np(fft2c_new(avg_gen[j] * std[j] + mean[j]).cpu())
+                avg_gen_np = \
+                torch.tensor(get_mvue(avg_ksp.reshape((1,) + avg_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
+                gt_np = torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[0].abs().numpy()
 
-                    avg_gen_np[np.isnan(avg_gen_np)] = 0
-                    gt_np[np.isnan(gt_np)] = 0
-                else:
-                    gt_np = transforms.root_sum_of_squares(complex_abs(gt[j] * std[j] + mean[j])).cpu().numpy()
-                    avg_gen_np = transforms.root_sum_of_squares(complex_abs(avg_gen[j] * std[j] + mean[j])).cpu().numpy()
+                avg_gen_np[np.isnan(avg_gen_np)] = 0
+                gt_np[np.isnan(gt_np)] = 0
 
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
                 losses['psnr'].append(psnr(gt_np, avg_gen_np))

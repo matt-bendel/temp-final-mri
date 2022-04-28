@@ -116,7 +116,7 @@ def create_datasets(args, val_only, big_test=False):
 
     dev_data = SelectiveSliceData_Val(
         root=args.data_path / 'multicoil_val',
-        transform=DataTransform(args),
+        transform=DataTransform(args, test=True),
         challenge='multicoil',
         sample_rate=1,
         use_top_slices=True,
