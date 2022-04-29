@@ -148,11 +148,12 @@ class CFIDMetric:
 
             im[np.isnan(im)] = 0
 
+            im = torch.tensor(im)
             im = 2 * (im - torch.min(im)) / (torch.max(im) - torch.min(im)) - 1
 
-            embed_ims[i, 0, :, :] = torch.tensor(im)
-            embed_ims[i, 1, :, :] = torch.tensor(im)
-            embed_ims[i, 2, :, :] = torch.tensor(im)
+            embed_ims[i, 0, :, :] = im
+            embed_ims[i, 1, :, :] = im
+            embed_ims[i, 2, :, :] = im
 
         return embed_ims
 
