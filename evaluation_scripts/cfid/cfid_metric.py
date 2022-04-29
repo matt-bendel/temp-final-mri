@@ -146,7 +146,7 @@ class CFIDMetric:
             im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape), sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
                 0].abs().numpy()
 
-            im[np.isnan(im)] = 0
+            # im[np.isnan(im)] = 0
 
             im = torch.tensor(im)
             im = 2 * (im - torch.min(im)) / (torch.max(im) - torch.min(im)) - 1
