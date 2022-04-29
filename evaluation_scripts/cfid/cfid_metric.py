@@ -145,7 +145,7 @@ class CFIDMetric:
             reformatted[:, :, :, 0] = multi_coil_inp[i, 0:16, :, :]
             reformatted[:, :, :, 1] = multi_coil_inp[i, 16:32, :, :]
             reformatted = tensor_to_complex_np(
-                (fft2c_new(reformatted)).cpu())  # * std[i, None, None, None, None] + mean[i, None, None, None, None]
+                (fft2c_new(reformatted* std[i, None, None, None] + mean[i, None, None, None])).cpu())  #
 
             im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape),
                                              sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
