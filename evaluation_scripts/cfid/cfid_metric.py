@@ -8,6 +8,7 @@ import sigpy as sp
 from tqdm import tqdm
 from utils.math import tensor_to_complex_np
 
+
 def symmetric_matrix_square_root_torch(mat, eps=1e-10):
     """Compute square root of a symmetric matrix.
     Note that this is different from an elementwise square root. We want to
@@ -135,25 +136,24 @@ class CFIDMetric:
             np.sum(np.square(np.abs(s_maps)), axis=1))
 
     def _get_embed_im(self, multi_coil_inp, mean, std, sense_maps):
-        embed_ims = torch.zeros(size=(multi_coil_inp.size(0), 3, self.args.im_size, self.args.im_size), device=self.args.device)
+        embed_ims = torch.zeros(size=(multi_coil_inp.size(0), 3, self.args.im_size, self.args.im_size),
+                                device=self.args.device)
         for i in range(multi_coil_inp.size(0)):
             reformatted = torch.zeros(size=(16, 384, 384, 2),
-                                         device=self.args.device)
+                                      device=self.args.device)
             reformatted[:, :, :, 0] = multi_coil_inp[i, 0:16, :, :]
             reformatted[:, :, :, 1] = multi_coil_inp[i, 16:32, :, :]
-            reformatted = tensor_to_complex_np((reformatted * std[i, None, None, None] + mean[i, None, None, None]).cpu()) #
+            reformatted = tensor_to_complex_np(
+                (reformatted * std[i, None, None, None] + mean[i, None, None, None]).cpu())  #
 
-            im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape), sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
+            im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape),
+                                             sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
                 0].abs().numpy()
 
             im[np.isnan(im)] = 0
 
             im = torch.tensor(im)
-            print(torch.max(im))
-            print(torch.min(im))
             im = 2 * (im - torch.min(im)) / (torch.max(im) - torch.min(im)) - 1
-            print(torch.max(im))
-            print(torch.min(im))
 
             embed_ims[i, 0, :, :] = im
             embed_ims[i, 1, :, :] = im
@@ -178,25 +178,24 @@ class CFIDMetric:
             std = std.cuda()
 
             with torch.no_grad():
-                    recon = self.gan(condition, true_cond)
+                recon = self.gan(condition, true_cond)
 
-                    image = self._get_embed_im(recon, mean, std, maps)
-                    condition_im = self._get_embed_im(condition, mean, std, maps)
-                    true_im = self._get_embed_im(gt, mean, std, maps)
-                    exit()
+                image = self._get_embed_im(recon, mean, std, maps)
+                condition_im = self._get_embed_im(condition, mean, std, maps)
+                true_im = self._get_embed_im(gt, mean, std, maps)
 
-                    img_e = self.image_embedding(image)
-                    cond_e = self.condition_embedding(condition_im)
-                    true_e = self.image_embedding(true_im)
+                img_e = self.image_embedding(image)
+                cond_e = self.condition_embedding(condition_im)
+                true_e = self.image_embedding(true_im)
 
-                    if self.cuda:
-                        true_embed.append(true_e.to('cuda:2'))
-                        image_embed.append(img_e.to('cuda:1'))
-                        cond_embed.append(cond_e.to('cuda:1'))
-                    else:
-                        true_embed.append(true_e.cpu().numpy())
-                        image_embed.append(img_e.cpu().numpy())
-                        cond_embed.append(cond_e.cpu().numpy())
+                if self.cuda:
+                    true_embed.append(true_e.to('cuda:2'))
+                    image_embed.append(img_e.to('cuda:1'))
+                    cond_embed.append(cond_e.to('cuda:1'))
+                else:
+                    true_embed.append(true_e.cpu().numpy())
+                    image_embed.append(img_e.cpu().numpy())
+                    cond_embed.append(cond_e.cpu().numpy())
 
         if self.cuda:
             true_embed = torch.cat(true_embed, dim=0)
@@ -207,7 +206,8 @@ class CFIDMetric:
             image_embed = np.concatenate(image_embed, axis=0)
             cond_embed = np.concatenate(cond_embed, axis=0)
 
-        return image_embed.to(dtype=torch.float64), cond_embed.to(dtype=torch.float64), true_embed.to(dtype=torch.float64)
+        return image_embed.to(dtype=torch.float64), cond_embed.to(dtype=torch.float64), true_embed.to(
+            dtype=torch.float64)
 
     def get_cfid_torch(self, resample=True):
         y_predict, x_true, y_true = self._get_generated_distribution()
