@@ -146,10 +146,14 @@ class CFIDMetric:
             im = torch.tensor(self._get_mvue(reformatted.reshape((1,) + reformatted.shape), sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
                 0].abs().numpy()
 
-            # im[np.isnan(im)] = 0
+            im[np.isnan(im)] = 0
 
             im = torch.tensor(im)
+            print(torch.max(im))
+            print(torch.min(im))
             im = 2 * (im - torch.min(im)) / (torch.max(im) - torch.min(im)) - 1
+            print(torch.max(im))
+            print(torch.min(im))
 
             embed_ims[i, 0, :, :] = im
             embed_ims[i, 1, :, :] = im
@@ -179,6 +183,7 @@ class CFIDMetric:
                     image = self._get_embed_im(recon, mean, std, maps)
                     condition_im = self._get_embed_im(condition, mean, std, maps)
                     true_im = self._get_embed_im(gt, mean, std, maps)
+                    exit()
 
                     img_e = self.image_embedding(image)
                     cond_e = self.condition_embedding(condition_im)
