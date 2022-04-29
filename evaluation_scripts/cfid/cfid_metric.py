@@ -199,7 +199,7 @@ class CFIDMetric:
             image_embed = np.concatenate(image_embed, axis=0)
             cond_embed = np.concatenate(cond_embed, axis=0)
 
-        return image_embed, cond_embed, true_embed
+        return image_embed.to(dtype=torch.float64), cond_embed.to(dtype=torch.float64), true_embed.to(dtype=torch.float64)
 
     def get_cfid_torch(self, resample=True):
         y_predict, x_true, y_true = self._get_generated_distribution()
