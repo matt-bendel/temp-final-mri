@@ -85,7 +85,7 @@ def get_metrics(args):
 
             temp_gens = torch.zeros(gens.shape, dtype=gens.dtype)
             for z in range(32):
-                temp_gens[:, z, :, :, :] = gens[:, z, :, :, :] * std + mean
+                temp_gens[:, z, :, :, :] = gens[:, z, :, :, :] * std[:, None, None, None] + mean[:, None, None, None]
 
             losses['apsd'].append(torch.mean(torch.std(temp_gens, dim=1), dim=(0, 1, 2, 3)).cpu().numpy())
 
