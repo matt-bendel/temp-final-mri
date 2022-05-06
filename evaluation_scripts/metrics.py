@@ -121,7 +121,7 @@ def get_metrics(args):
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
     fig.suptitle('Metric Histograms')
-    fig.subplots_adjust(top=0.25)
+    fig.subplots_adjust(hspace=1)
     ax1.hist(losses['psnr'], bins=15)
     ax1.set_title('PSNR')
     ax2.hist(losses['snr'], bins=15)
