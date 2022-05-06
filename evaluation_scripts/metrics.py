@@ -32,6 +32,11 @@ def snr(gt: np.ndarray, pred: np.ndarray) -> np.ndarray:
 
     return snr
 
+def mse(gt: np.ndarray, pred: np.ndarray) -> np.ndarray:
+    """Compute the Signal to Noise Ratio metric (SNR)"""
+    noise_mse = np.mean((gt - pred) ** 2)
+
+    return noise_mse
 
 def ssim(
         gt: np.ndarray, pred: np.ndarray, maxval: Optional[float] = None
@@ -63,7 +68,9 @@ def get_metrics(args):
         'psnr': [],
         'snr': [],
         'ssim': [],
-        'apsd': []
+        'apsd': [],
+        'mse': [],
+        'max_i': []
     }
 
     test_loader = create_test_loader(args)
@@ -109,6 +116,25 @@ def get_metrics(args):
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
                 losses['psnr'].append(psnr(gt_np, avg_gen_np))
                 losses['snr'].append(snr(gt_np, avg_gen_np))
+                losses['mse'].append(mse(gt_np, avg_gen_np))
+                losses['max_i'].append(gt_np.max())
+
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+    fig.suptitle('Metric Histograms')
+    ax1.hist(losses['psnr'])
+    ax1.set_title('PSNR')
+    ax2.hist(losses['snr'])
+    ax2.set_title('SNR')
+    plt.savefig('histo.png')
+    plt.close(fig)
+
+    fig = plt.figure()
+    fig.suptitle('MSE vs. MAX_I')
+    plt.scatter(losses['max_i'], losses['mse'])
+    plt.xlabel('MAX_I')
+    plt.ylabel('MSE')
+    plt.savefig('mse_v_maxi.png')
+    plt.close(fig)
 
     print(f'MEAN PSNR: {np.mean(losses["psnr"]):.2f} || MEDIAN PSNR: {np.median(losses["psnr"]):.2f}')
     print(f'MEAN SNR: {np.mean(losses["snr"]):.2f} || MEDIAN SNR: {np.median(losses["snr"]):.2f}')
