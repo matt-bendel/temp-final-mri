@@ -29,7 +29,3 @@ if __name__ == '__main__':
     args.out_chans = 32
 
     get_metrics(args)
-
-    if args.single_plot:
-        pass
-

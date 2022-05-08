@@ -260,7 +260,7 @@ def train(args):
         for i, data in enumerate(dev_loader):
             G.update_gen_status(val=True)
             with torch.no_grad():
-                y, x, y_true, mean, std, maps = data
+                y, x, y_true, mean, std, maps, _, _ = data
                 y = y.to(args.device)
                 x = x.to(args.device)
                 y_true = y_true.to(args.device)

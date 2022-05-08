@@ -97,7 +97,7 @@ class DataTransform:
         final_gt[16:32, :, :] = normalized_gt[:, :, :, 1]
 
         if self.test:
-            return final_input.float(), final_gt.float(), normalized_true_measures.float(), mean.float(), std.float(), sense_maps
+            return final_input.float(), final_gt.float(), normalized_true_measures.float(), mean.float(), std.float(), sense_maps, fname, slice
 
         return final_input.float(), final_gt.float(), normalized_true_measures.float(), mean.float(), std.float()
 
