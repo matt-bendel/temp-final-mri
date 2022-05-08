@@ -196,7 +196,6 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
     generate_gif('image', ind, R)
 
     avg_lang = np.mean(recons, axis=0)
-    print(avg_lang[0, :])
     std_lang = np.std(recons, axis=0)
     gt_lang = recon_object['gt'][0][0].abs().cpu().numpy()
     zfr_lang = recon_object['zfr'][0].abs().cpu().numpy()
@@ -210,14 +209,14 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
     generate_image(fig, gt_lang, avg_lang, f'CSGM', 3, 3, 4, disc_num=False)
     generate_image(fig, gt_np, avg_gen_np, f'RC-GAN', 4, 3, 4, disc_num=False)
 
-    generate_error_map(fig, gt_lang, zfr_lang, f'ZFR', 6, 2, 4)
-    generate_error_map(fig, gt_lang, avg_lang, f'CSGM', 7, 2, 4)
-    im, ax = generate_error_map(fig, gt_np, avg_gen_np, f'RC-GAN', 8, 2, 4)
+    generate_error_map(fig, gt_lang, zfr_lang, f'ZFR', 6, 3, 4)
+    generate_error_map(fig, gt_lang, avg_lang, f'CSGM', 7, 3, 4)
+    im, ax = generate_error_map(fig, gt_np, avg_gen_np, f'RC-GAN', 8, 3, 4)
 
     get_colorbar(fig, im, ax)
 
-    generate_image(fig, gt_lang, std_lang, 'Std. Dev', 11, 2, 4)
-    im, ax = generate_image(fig, gt_np, std_recon, 'Std. Dev', 12, 2, 4)
+    generate_image(fig, gt_lang, std_lang, 'Std. Dev', 11, 3, 4)
+    im, ax = generate_image(fig, gt_np, std_recon, 'Std. Dev', 12, 3, 4)
     get_colorbar(fig, im, ax)
 
     plt.savefig(f'comp_plots_R={R}_{ind}_{0}.png')

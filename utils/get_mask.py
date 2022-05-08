@@ -36,7 +36,7 @@ def get_mask(resolution, return_mask=False, R=4, p_m=False):
         m[:, 56:73] = True
 
     if p_m:
-        print(a)
+        pass
 
     samp = m
     numcoil = 16
