@@ -124,6 +124,7 @@ class GANWrapper:
         reconstructed_kspace = fft2c_new(reformatted_tensor)
 
         if self.print_mask:
+            self.print_mask = False
             inds = get_mask(self.resolution, R=self.args.R, p_m=True)
         else:
             inds = get_mask(self.resolution, R=self.args.R)
