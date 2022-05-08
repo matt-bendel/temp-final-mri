@@ -291,7 +291,7 @@ def get_metrics(args):
                 inds = np.isnan(gt_np)
                 gt_np[inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
 
-                if i % 2 == 0 and (j == 0 or j == 2):
+                if j == 0 or j == 2:
                     get_plots(fname[j], gt_np, avg_gen_np, new_gens[j, :, :, :, :], args.R, slice[j], maps[j], i, j)
 
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
