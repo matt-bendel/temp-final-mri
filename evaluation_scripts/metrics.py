@@ -68,7 +68,6 @@ def get_mvue(kspace, s_maps):
 def generate_image(fig, target, image, method, image_ind, rows, cols, kspace=False, disc_num=False):
     # rows and cols are both previously defined ints
     ax = fig.add_subplot(rows, cols, image_ind)
-    ax.set_title(method, size=10)
 
     if method != 'GT' and method != 'Std. Dev':
         psnr_val = psnr(target, image)
@@ -84,6 +83,7 @@ def generate_image(fig, target, image, method, image_ind, rows, cols, kspace=Fal
         ax.set_xticks([])
         ax.set_yticks([])
     else:
+        ax.set_title(method, size=10)
         if kspace:
             image = image ** 0.4
             target = target ** 0.4
@@ -195,22 +195,28 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
     generate_gif('image', ind, R)
 
     avg_lang = np.mean(recons, axis=0)
+    std_lang = np.std(recons, axis=0)
     gt_lang = recon_object['gt'][0][0].abs().cpu().numpy()
     zfr_lang = recon_object['zfr'][0].abs().cpu().numpy()
 
+    std_recon = np.std(gen_recons, axis=0)
     fig = plt.figure()
     fig.subplots_adjust(wspace=0, hspace=0.05)
 
-    generate_image(fig, gt_lang, gt_lang, f'GT', 1, 2, 4, disc_num=False)
-    generate_image(fig, gt_lang, zfr_lang, f'ZFR', 2, 2, 4, disc_num=False)
-    generate_image(fig, gt_lang, avg_lang, f'CSGM', 3, 2, 4, disc_num=False)
-    generate_image(fig, gt_np, avg_gen_np, f'RC-GAN', 4, 2, 4, disc_num=False)
+    generate_image(fig, gt_lang, gt_lang, f'GT', 1, 3, 4, disc_num=False)
+    generate_image(fig, gt_lang, zfr_lang, f'ZFR', 2, 3, 4, disc_num=False)
+    generate_image(fig, gt_lang, avg_lang, f'CSGM', 3, 3, 4, disc_num=False)
+    generate_image(fig, gt_np, avg_gen_np, f'RC-GAN', 4, 3, 4, disc_num=False)
 
-    im, ax = generate_error_map(fig, gt_lang, zfr_lang, f'ZFR', 6, 2, 4)
+    generate_error_map(fig, gt_lang, zfr_lang, f'ZFR', 6, 2, 4)
     generate_error_map(fig, gt_lang, avg_lang, f'CSGM', 7, 2, 4)
-    generate_error_map(fig, gt_np, avg_gen_np, f'RC-GAN', 8, 2, 4)
+    im, ax = generate_error_map(fig, gt_np, avg_gen_np, f'RC-GAN', 8, 2, 4)
 
-    get_colorbar(fig, im, ax, left=True)
+    get_colorbar(fig, im, ax)
+
+    generate_image(fig, gt_lang, std_lang, 'Std. Dev', 11, 2, 4)
+    im, ax = generate_image(fig, gt_np, std_recon, 'Std. Dev', 12, 2, 4)
+    get_colorbar(fig, im, ax)
 
     plt.savefig(f'comp_plots_R={R}_{ind}_{0}.png')
     plt.close(fig)
