@@ -189,7 +189,8 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
                 get_mvue(ksp.reshape((1,) + ksp.shape), maps.reshape((1,) + maps.shape)))[
                 0].abs().numpy()
 
-        gen_recons[j][np.isnan(gen_recons[j])] = 0
+        inds = np.isnan(gen_recons[j])
+        gen_recons[j][inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
         gif_im(gt_np, gen_recons[j], gt_lang, recons[j], j + 1, 'image')
 
     generate_gif('image', ind, R)
@@ -285,8 +286,11 @@ def get_metrics(args):
                     torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[
                         0].abs().numpy()
 
-                avg_gen_np[np.isnan(avg_gen_np)] = 0
-                gt_np[np.isnan(gt_np)] = 0
+                inds = np.isnan(avg_gen_np)
+                avg_gen_np[inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
+
+                inds = np.isnan(gt_np)
+                gt_np[inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
 
                 if i % 3 == 0 and j == 0:
                     get_plots(fname[j], gt_np, avg_gen_np, new_gens[j, :, :, :, :], args.R, slice[j], maps[j], i)

@@ -151,7 +151,8 @@ class CFIDMetric:
                                              sense_maps[i].reshape((1,) + sense_maps[i].shape)))[
                 0].abs().numpy()
 
-            im[np.isnan(im)] = 0
+            inds = np.isnan(im)
+            im[inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
 
             im = torch.tensor(im)
             im = 2 * (im - torch.min(im)) / (torch.max(im) - torch.min(im)) - 1
