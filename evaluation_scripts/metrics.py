@@ -134,12 +134,12 @@ def gif_im(true, gen_im, lang_true, lang_im, index, type, disc_num=False):
 
 def generate_gif(type, R, ind):
     images = []
-    for i in range(8):
+    for i in range(32):
         images.append(iio.imread(f'/home/bendel.8/Git_Repos/temp-final-mri/gif_{type}_{i}.png'))
 
     iio.mimsave(f'variation_gif_R={R}_{ind}_0.gif', images, duration=0.25)
 
-    for i in range(8):
+    for i in range(32):
         os.remove(f'/home/bendel.8/Git_Repos/temp-final-mri/gif_{type}_{i}.png')
 
 
@@ -189,7 +189,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
                 0].abs().numpy()
 
         gen_recons[j][np.isnan(gen_recons[j])] = 0
-        gif_im(gt_np, gen_recons[j], gt_lang, recons[j], j, 'image')
+        gif_im(gt_np, gen_recons[j], gt_lang, recons[j], j + 1, 'image')
 
     generate_gif('image', ind, R)
 
