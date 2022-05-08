@@ -68,13 +68,14 @@ def get_mvue(kspace, s_maps):
 def generate_image(fig, target, image, method, image_ind, rows, cols, kspace=False, disc_num=False):
     # rows and cols are both previously defined ints
     ax = fig.add_subplot(rows, cols, image_ind)
+    ax.set_title(method, size=10)
+
     if method != 'GT' and method != 'Std. Dev':
         psnr_val = psnr(target, image)
         snr_val = snr(target, image)
         ssim_val = ssim(target, image)
         if not kspace:
             pred = disc_num
-            ax.set_title(method, size=10)
             ax.text(1, 0.8, f'PSNR: {psnr_val:.2f}\nSNR: {snr_val:.2f}\nSSIM: {ssim_val:.4f}', transform=ax.transAxes,
                     horizontalalignment='right', verticalalignment='center', fontsize='xx-small', color='yellow')
 
@@ -206,8 +207,8 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
     generate_image(fig, gt_np, avg_gen_np, f'RC-GAN', 4, 2, 4, disc_num=False)
 
     im, ax = generate_error_map(fig, gt_lang, zfr_lang, f'ZFR', 6, 2, 4)
-    generate_error_map(fig, gt_lang, avg_lang, f'CSGM', 6, 2, 4)
-    generate_error_map(fig, gt_np, avg_gen_np, f'RC-GAN', 6, 2, 4)
+    generate_error_map(fig, gt_lang, avg_lang, f'CSGM', 7, 2, 4)
+    generate_error_map(fig, gt_np, avg_gen_np, f'RC-GAN', 8, 2, 4)
 
     get_colorbar(fig, im, ax, left=True)
 
