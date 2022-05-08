@@ -165,6 +165,7 @@ def get_colorbar(fig, im, ax, left=False):
 
 
 def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
+    print(R)
     recons = np.zeros((32, 384, 384))
     recon_object = None
     gen_recons = np.zeros((32, 384, 384))
@@ -187,13 +188,14 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
                 get_mvue(ksp.reshape((1,) + ksp.shape), maps.reshape((1,) + maps.shape)))[
                 0].abs().numpy()
 
+        gen_recons[j][np.isnan(gen_recons[j])] = 0
         gif_im(gt_np, gen_recons[j], gt_lang, recons[j], j, 'image')
 
     generate_gif('image', ind, R)
 
     avg_lang = np.mean(recons, axis=0)
     gt_lang = recon_object['gt'][0][0].abs().cpu().numpy()
-    zfr_lang = recon_object['zfr'][0].cpu().numpy()
+    zfr_lang = recon_object['zfr'][0].abs().cpu().numpy()
 
     fig = plt.figure()
     fig.subplots_adjust(wspace=0, hspace=0.05)
@@ -275,11 +277,11 @@ def get_metrics(args):
                     torch.tensor(get_mvue(gt_ksp.reshape((1,) + gt_ksp.shape), maps[j].reshape((1,) + maps[j].shape)))[
                         0].abs().numpy()
 
-                if i % 3 == 0 and j == 0:
-                    get_plots(fname[j], gt_np, avg_gen_np, new_gens[j, :, :, :, :], args.R, slice[j], maps[j], i)
-
                 avg_gen_np[np.isnan(avg_gen_np)] = 0
                 gt_np[np.isnan(gt_np)] = 0
+
+                if i % 3 == 0 and j == 0:
+                    get_plots(fname[j], gt_np, avg_gen_np, new_gens[j, :, :, :, :], args.R, slice[j], maps[j], i)
 
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
                 losses['psnr'].append(psnr(gt_np, avg_gen_np))
