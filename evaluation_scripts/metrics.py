@@ -175,6 +175,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
             new_filename = recon_directory + fname + f'|langevin|slide_idx_{slice}_R={R}_sample={j}_outputs.pt'
             recon_object = torch.load(new_filename)
         except:
+            print('EXCEPT')
             return
 
         recons[j] = complex_abs(recon_object['mvue'][0].permute(1, 2, 0)).cpu().numpy()
@@ -230,8 +231,6 @@ def get_metrics(args):
     for i, data in enumerate(test_loader):
         with torch.no_grad():
             y, x, y_true, mean, std, maps, fname, slice = data
-            print(fname)
-            exit()
             y = y.to(args.device)
             x = x.to(args.device)
             y_true = y_true.to(args.device)
@@ -307,4 +306,5 @@ def get_metrics(args):
     print(f'MEAN SSIM: {np.mean(losses["ssim"]):.4f} || MEDIAN SSIM: {np.median(losses["ssim"]):.4f}')
     print(f'MEAN APSD: {np.mean(losses["apsd"]):} || MEDIAN APSD: {np.median(losses["apsd"]):}')
 
+    exit()
     compute_cfid.get_cfid(args, G)
