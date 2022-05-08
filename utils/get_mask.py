@@ -4,7 +4,7 @@ import numpy as np
 from data import transforms
 
 
-def get_mask(resolution, return_mask=False, R=4):
+def get_mask(resolution, return_mask=False, R=4, p_m=False):
     if R == 8 and resolution == 384:
         a = np.array(
             [1, 24, 45, 64, 81, 97, 111, 123, 134, 144, 153, 161, 168, 175, 181, 183, 184, 185, 186, 187, 188, 189, 190,
@@ -12,7 +12,8 @@ def get_mask(resolution, return_mask=False, R=4):
              305, 322, 341, 362])
         m = np.zeros((384, 384))
         m[:, a] = True
-        m[:, 176:208] = True
+        m[:, 183:201] = True
+
 
     if R == 4 and resolution == 384:
         a = np.array(
@@ -33,6 +34,9 @@ def get_mask(resolution, return_mask=False, R=4):
         m = np.zeros((128, 128))
         m[:, a] = True
         m[:, 56:73] = True
+
+    if p_m:
+        print(a)
 
     samp = m
     numcoil = 16

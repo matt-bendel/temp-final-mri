@@ -102,6 +102,7 @@ class GANWrapper:
         self.resolution = args.im_size
         self.gen = gen
         self.data_consistency = self.args.data_consistency
+        self.print_mask = True
 
     def get_noise(self, num_vectors, var):
         # return torch.cuda.FloatTensor(np.random.normal(size=(num_vectors, self.args.latent_size), scale=1))
@@ -122,7 +123,10 @@ class GANWrapper:
         reformatted_tensor = self.reformat(samples)
         reconstructed_kspace = fft2c_new(reformatted_tensor)
 
-        inds = get_mask(self.resolution, R=self.args.R)
+        if self.print_mask:
+            inds = get_mask(self.resolution, R=self.args.R, p_m=True)
+        else:
+            inds = get_mask(self.resolution, R=self.args.R)
 
         reconstructed_kspace[:, :, inds[0], inds[1], :] = measures[:, :, inds[0], inds[1], :]
 
