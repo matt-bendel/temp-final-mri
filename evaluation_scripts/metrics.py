@@ -195,6 +195,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
     generate_gif('image', ind, R)
 
     avg_lang = np.mean(recons, axis=0)
+    print(avg_lang[0, :])
     std_lang = np.std(recons, axis=0)
     gt_lang = recon_object['gt'][0][0].abs().cpu().numpy()
     zfr_lang = recon_object['zfr'][0].abs().cpu().numpy()
