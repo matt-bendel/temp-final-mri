@@ -272,7 +272,7 @@ def get_metrics(args):
                         0].abs().numpy()
 
                 if i % 3 == 0 and j == 0:
-                    get_plots(fname[j], gt_np, avg_gen_np, temp_gens[j, :, :, :, :], args.R, slice[j], maps[j])
+                    get_plots(fname[j], gt_np, avg_gen_np, temp_gens[j, :, :, :, :], args.R, slice[j], maps[j], i)
 
                 avg_gen_np[np.isnan(avg_gen_np)] = 0
                 gt_np[np.isnan(gt_np)] = 0
