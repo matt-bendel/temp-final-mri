@@ -133,12 +133,12 @@ def gif_im(true, gen_im, lang_true, lang_im, index, type, disc_num=False):
     plt.close()
 
 
-def generate_gif(type, R, ind):
+def generate_gif(type, R, ind, ind2):
     images = []
     for i in range(32):
         images.append(iio.imread(f'/home/bendel.8/Git_Repos/temp-final-mri/gif_{type}_{i}.png'))
 
-    iio.mimsave(f'variation_gif_R={R}_{ind}_0.gif', images, duration=0.25)
+    iio.mimsave(f'variation_gif_R={R}_{ind}_{ind2}.gif', images, duration=0.25)
 
     for i in range(32):
         os.remove(f'/home/bendel.8/Git_Repos/temp-final-mri/gif_{type}_{i}.png')
@@ -165,7 +165,7 @@ def get_colorbar(fig, im, ax, left=False):
         cbar_ax.yaxis.set_label_position('left')
 
 
-def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
+def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind, ind2):
     print(R)
     recons = np.zeros((32, 384, 384))
     recon_object = None
@@ -193,7 +193,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
         gen_recons[j][inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
         gif_im(gt_np, gen_recons[j], gt_lang, recons[j], j + 1, 'image')
 
-    generate_gif('image', ind, R)
+    generate_gif('image', R, ind, ind2)
 
     avg_lang = np.mean(recons, axis=0)
     std_lang = np.std(recons, axis=0)
@@ -219,7 +219,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
     im, ax = generate_image(fig, gt_np, std_recon, 'Std. Dev', 12, 3, 4)
     get_colorbar(fig, im, ax)
 
-    plt.savefig(f'comp_plots_R={R}_{ind}_{0}.png')
+    plt.savefig(f'comp_plots_R={R}_{ind}_{ind2}.png')
     plt.close(fig)
 
 
@@ -291,8 +291,8 @@ def get_metrics(args):
                 inds = np.isnan(gt_np)
                 gt_np[inds] = np.random.normal(0, np.sqrt(1e-13), (384, 384))[inds]
 
-                if i % 3 == 0 and j == 0:
-                    get_plots(fname[j], gt_np, avg_gen_np, new_gens[j, :, :, :, :], args.R, slice[j], maps[j], i)
+                if i % 2 == 0 and (j == 0 or j == 2):
+                    get_plots(fname[j], gt_np, avg_gen_np, new_gens[j, :, :, :, :], args.R, slice[j], maps[j], i, j)
 
                 losses['ssim'].append(ssim(gt_np, avg_gen_np))
                 losses['psnr'].append(psnr(gt_np, avg_gen_np))
