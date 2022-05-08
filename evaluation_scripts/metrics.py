@@ -132,12 +132,12 @@ def gif_im(true, gen_im, lang_true, lang_im, index, type, disc_num=False):
     plt.close()
 
 
-def generate_gif(type):
+def generate_gif(type, R, ind):
     images = []
     for i in range(8):
         images.append(iio.imread(f'/home/bendel.8/Git_Repos/temp-final-mri/gif_{type}_{i}.png'))
 
-    iio.mimsave(f'variation_gif.gif', images, duration=0.25)
+    iio.mimsave(f'variation_gif_R={R}_{ind}_0.gif', images, duration=0.25)
 
     for i in range(8):
         os.remove(f'/home/bendel.8/Git_Repos/temp-final-mri/gif_{type}_{i}.png')
@@ -189,7 +189,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
 
         gif_im(gt_np, gen_recons[j], gt_lang, recons[j], j, 'image')
 
-    generate_gif('image')
+    generate_gif('image', ind, R)
 
     avg_lang = np.mean(recons, axis=0)
     gt_lang = recon_object['gt'][0][0].abs().cpu().numpy()
@@ -209,7 +209,7 @@ def get_plots(fname, gt_np, avg_gen_np, temp_gens, R, slice, maps, ind):
 
     get_colorbar(fig, im, ax, left=True)
 
-    plt.savefig(f'comp_plots_{ind}_{0}.png')
+    plt.savefig(f'comp_plots_R={R}_{ind}_{0}.png')
     plt.close(fig)
 
 
