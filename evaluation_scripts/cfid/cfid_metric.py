@@ -171,7 +171,7 @@ class CFIDMetric:
         for i, data in tqdm(enumerate(self.loader),
                             desc='Computing generated distribution',
                             total=len(self.loader)):
-            condition, gt, true_cond, mean, std, maps = data
+            condition, gt, true_cond, mean, std, maps, _, _ = data
             condition = condition.cuda()
             gt = gt.cuda()
             true_cond = true_cond.cuda()
